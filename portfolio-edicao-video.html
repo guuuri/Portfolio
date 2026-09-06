@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>guisouzxa — Video Editing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --off:#f2f1ee;
+    --ink:#111111;
+    --grey:#6b6b6b;
+    --line:#cfcdc6;
+    --dur:0.5s;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--white);
+    color:var(--ink);
+    font-family:'Archivo', Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--ink);color:var(--white);}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+
+  .wrap{width:100%;max-width:1400px;margin:0 auto;padding:0 40px;}
+
+  /* NAV */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 40px;
+    mix-blend-mode:difference;
+    color:#fff;
+  }
+  header .logo{
+    font-weight:800;font-size:16px;letter-spacing:0.02em;
+  }
+  nav ul{list-style:none;display:flex;gap:34px;}
+  nav a{
+    font-size:12px;letter-spacing:0.14em;text-transform:uppercase;
+    font-weight:500;position:relative;
+  }
+  nav a::after{
+    content:'';position:absolute;left:0;bottom:-4px;width:0;height:1px;
+    background:currentColor;transition:width .3s ease;
+  }
+  nav a:hover::after{width:100%;}
+
+  /* HERO / BIO */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    background:#0c0c0c;
+    color:#fff;
+    overflow:hidden;
+  }
+  .hero-grain{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 20% 15%, #3a3a3a 0%, #131313 55%, #050505 100%);
+    opacity:.9;
+  }
+  .hero-grain::before{
+    content:'';position:absolute;inset:0;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/></svg>");
+    mix-blend-mode:overlay;opacity:.5;
+  }
+  .hero-inner{
+    position:relative;z-index:2;
+    padding:160px 40px 64px;
+    display:flex;align-items:flex-end;gap:56px;flex-wrap:wrap;
+    animation:rise 1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise{
+    from{opacity:0;transform:translateY(24px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .hero-photo{
+    width:170px;aspect-ratio:1;overflow:hidden;flex-shrink:0;
+    border:1px solid rgba(255,255,255,.25);
+  }
+  .hero-photo img{
+    width:100%;height:100%;object-fit:cover;object-position:center 15%;
+    filter:grayscale(1) contrast(1.05);
+    transition:filter var(--dur) ease;
+    display:block;
+  }
+  .hero-photo:hover img{filter:grayscale(0) contrast(1.05);}
+  .hero-text{flex:1;min-width:260px;}
+  .hero-text h1{
+    font-weight:800;
+    font-size:clamp(30px, 4.4vw, 60px);
+    line-height:1.1;
+    letter-spacing:-0.015em;
+    max-width:15ch;
+  }
+  .hero-text p{
+    margin-top:16px;font-size:15px;line-height:1.5;color:#c9c9c9;max-width:42ch;
+  }
+  .hero-bottom{
+    position:relative;z-index:2;
+    padding:22px 40px 24px;
+    border-top:1px solid rgba(255,255,255,.28);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .hero-tag{
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#c9c9c9;
+  }
+  .scroll-cue{
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#c9c9c9;
+    display:flex;align-items:center;gap:10px;
+  }
+  .scroll-cue span{
+    display:block;width:1px;height:38px;background:#c9c9c9;
+    animation:cue 1.8s ease-in-out infinite;
+  }
+  @keyframes cue{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}50.01%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+  /* MARQUEE */
+  .marquee{
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    white-space:nowrap;
+    padding:16px 0;
+  }
+  .marquee-track{
+    display:inline-block;
+    animation:scroll 22s linear infinite;
+    font-size:14px;letter-spacing:.02em;
+  }
+  .marquee-track span{margin:0 22px;color:var(--grey);}
+  .marquee-track span b{color:var(--ink);font-weight:700;}
+  @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* SECTION LABEL */
+  .section-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:0 0 40px;
+  }
+  .section-head h3{
+    font-weight:800;font-size:clamp(24px,3vw,36px);letter-spacing:-0.01em;
+  }
+  .section-head .count{font-size:13px;color:var(--grey);}
+
+  /* SHOWREEL + WORK VIDEOS */
+  .showreel{padding:120px 0 0;}
+  .work{padding:110px 0;border-bottom:1px solid var(--line);}
+  .video-frame{
+    position:relative;overflow:hidden;background:#0c0c0c;
+    border:1px solid var(--line);
+  }
+  .video-frame.wide{aspect-ratio:16/9;}
+  .video-frame.tall{aspect-ratio:9/16;max-width:340px;margin:0 auto;width:100%;}
+  .video-frame iframe{
+    position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+    filter:grayscale(1) contrast(1.05);
+    transition:filter var(--dur) ease;
+  }
+  .video-frame:hover iframe{filter:grayscale(0) contrast(1.05);}
+
+  .category{margin-bottom:70px;}
+  .category:last-child{margin-bottom:0;}
+  .category h4{
+    font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--grey);font-weight:700;margin-bottom:22px;
+  }
+  .video-grid{display:grid;gap:2px;background:var(--line);}
+  .wide-grid{grid-template-columns:repeat(3,1fr);}
+  .wide-grid-2{grid-template-columns:repeat(2,1fr);}
+  .tall-grid{grid-template-columns:repeat(3,1fr);background:none;gap:20px;}
+
+  /* TOOLS */
+  .tools{padding:110px 0;border-bottom:1px solid var(--line);}
+  .skills{display:flex;flex-direction:column;max-width:760px;}
+  .skill-row{
+    display:flex;justify-content:space-between;padding:20px 0;border-top:1px solid var(--line);font-size:16px;font-weight:500;
+  }
+  .skills .skill-row:last-child{border-bottom:1px solid var(--line);}
+  .skill-row .n{color:var(--grey);font-weight:400;text-align:right;}
+
+  /* CONTACT */
+  .contact{padding:130px 0 60px;}
+  .contact h2{
+    font-weight:800;font-size:clamp(38px,7vw,96px);line-height:0.95;letter-spacing:-0.02em;max-width:14ch;
+  }
+  .contact-row{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-top:70px;padding-top:26px;border-top:1px solid var(--line);
+    flex-wrap:wrap;gap:24px;
+  }
+  .contact-links{display:flex;gap:30px;flex-wrap:wrap;}
+  .contact-links a{font-size:13px;letter-spacing:.06em;text-decoration:underline;text-underline-offset:4px;}
+  .footer-meta{font-size:12px;color:var(--grey);}
+
+  @media (max-width:860px){
+    .wrap{padding:0 22px;}
+    header{padding:20px 22px;}
+    .hero-inner{padding:130px 22px 44px;flex-direction:column;align-items:flex-start;gap:26px;}
+    .hero-bottom{padding:20px 22px 22px;}
+    .wide-grid,.wide-grid-2,.tall-grid{grid-template-columns:1fr;}
+    .video-frame.tall{max-width:260px;}
+    .contact-row{flex-direction:column;align-items:flex-start;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">guisouzxa</div>
+  <nav>
+    <ul>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-grain"></div>
+  <div class="hero-inner">
+    <div class="hero-photo">
+      <img src="profile.jpg" alt="Portrait of guisouzxa">
+    </div>
+    <div class="hero-text">
+      <h1>18 years old. 6 years editing video.</h1>
+      <p>Hard-working, and always delivers on time.</p>
+    </div>
+  </div>
+  <div class="hero-bottom">
+    <span class="hero-tag">Portfolio 2023 — 2026</span>
+    <div class="scroll-cue"><span></span>Scroll</div>
+  </div>
+</section>
+
+<section class="showreel">
+  <div class="wrap">
+    <div class="section-head">
+      <h3>Showreel</h3>
+      <span class="count">Start here</span>
+    </div>
+    <div class="video-frame wide">
+      <iframe src="https://www.youtube.com/embed/GgvQougKjJY" title="Showreel" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<div class="marquee">
+  <div class="marquee-track">
+    <span><b>Premiere</b> Pro</span>
+    <span><b>After</b> Effects</span>
+    <span><b>Motion</b> design</span>
+    <span><b>VFX</b></span>
+    <span><b>Premiere</b> Pro</span>
+    <span><b>After</b> Effects</span>
+    <span><b>Motion</b> design</span>
+    <span><b>VFX</b></span>
+  </div>
+</div>
+
+<section class="work" id="work">
+  <div class="wrap">
+    <div class="section-head">
+      <h3>Selected work</h3>
+      <span class="count">10 projects</span>
+    </div>
+
+    <div class="category">
+      <h4>AMVs</h4>
+      <div class="video-grid wide-grid">
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/vy73UsTfm_8" title="AMV 1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/hDa10-1NUlA" title="AMV 2" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/lolt8QYfZYw" title="AMV 3" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="category">
+      <h4>Reels</h4>
+      <div class="video-grid tall-grid">
+        <div class="video-frame tall">
+          <iframe src="https://www.youtube.com/embed/l6tlbJ1S2QA" title="Reel 1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame tall">
+          <iframe src="https://www.youtube.com/embed/q2-mKxcw6eQ" title="Reel 2" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame tall">
+          <iframe src="https://www.youtube.com/embed/P3E6hOIrVU8" title="Reel 3" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="category">
+      <h4>Visual videos</h4>
+      <div class="video-grid wide-grid-2">
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/sCc07ZIlFjo" title="Visual video 1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/jyV88Ioa3N8" title="Visual video 2" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/eE4fhV7JZN4" title="Visual video 3" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="video-frame wide">
+          <iframe src="https://www.youtube.com/embed/gSd9rDKEb6E" title="Visual video 4" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tools" id="tools">
+  <div class="wrap">
+    <div class="section-head">
+      <h3>Tools</h3>
+      <span class="count">Software</span>
+    </div>
+    <div class="skills">
+      <div class="skill-row"><span>Premiere Pro</span><span class="n">Advanced editing</span></div>
+      <div class="skill-row"><span>After Effects</span><span class="n">Motion design &amp; VFX</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>Let's work together.</h2>
+    <div class="contact-row">
+      <div class="contact-links">
+        <a href="mailto:guiriguigui258@gmail.com">guiriguigui258@gmail.com</a>
+        <a href="#">Discord — guisouzxa</a>
+        <a href="#">Instagram</a>
+        <a href="#">Vimeo</a>
+        <a href="#">LinkedIn</a>
+      </div>
+      <span class="footer-meta">São Paulo, Brazil — © 2026</span>
+    </div>
+  </div>
+</section>
+
+
+</body>
+</html>
